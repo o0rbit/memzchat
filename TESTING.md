@@ -28,6 +28,8 @@ Coverage areas:
 | Error sanitisation   | 500 response references req.id, does not leak stack trace           |
 | Rate limit            | up to N ok, N+1 → 429 with M_RATE_LIMITED, 0 = disabled              |
 | 404 handler           | JSON 404 with errcode M_NOT_FOUND                                    |
+| Password hashing      | scrypt roundtrip, wrong/malformed rejection, rehash detection        |
+| Better-auth JWT       | HS256 roundtrip, wrong-secret rejection, expired rejection, tamper detection |
 
 ## Architecture decisions
 

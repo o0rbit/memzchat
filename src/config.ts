@@ -75,6 +75,38 @@ export interface DimensionConfig {
         cspExtraStyleSrc: string[];
         cspExtraImgSrc: string[];
     };
+    auth: {
+        // HS256 secret for native better-auth tokens. Override via
+        // MEMZ_AUTH_SECRET in compose. MUST be >= 32 chars in prod.
+        // When unset AND NODE_ENV != "production", a per-process random
+        // secret is generated so the integration-manager frontend can
+        // still log in. NEVER use the random fallback in prod.
+        betterSecret: string;
+
+        // Operator-defined bootstrap admin. Username is always "admin";
+        // password comes from MEMZ_ADMIN_PASSWORD. When unset, no bootstrap
+        // row is created (the operator must register the first user manually
+        // or rely on OIDC's first-user-auto-admin flag).
+        defaultAdminPassword: string;
+
+        // Allow OIDC-based login (Authentik / generic). When issuer is unset
+        // the /auth/oidc/callback endpoint returns 503.
+        oidcIssuer: string;
+        oidcClientId: string;
+        oidcClientSecret: string;
+        oidcAudience: string;
+
+        // First-ever OIDC login gets role=admin automatically. Mirrors
+        // tradeus's OIDC_AUTO_ADMIN. Default true.
+        oidcAutoAdmin: boolean;
+
+        // Allow public registration (POST /api/v1/dimension/auth/register).
+        // Default false — admin must create users via /auth/users.
+        allowPublicRegistration: boolean;
+
+        // Access-token TTL in seconds. Default 1 hour.
+        tokenTtlSec: number;
+    };
 }
 
 //TODO: We should better use the .get function from node config

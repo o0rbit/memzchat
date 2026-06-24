@@ -147,3 +147,33 @@ security:
   cspExtraScriptSrc: []
   cspExtraStyleSrc: []
   cspExtraImgSrc: []
+
+# ============================================================================
+# Multi-user auth (v2)
+# ============================================================================
+auth:
+  # better-auth HS256 secret. ENV: MEMZ_AUTH_SECRET. Must be >= 32 chars
+  # in production. The default empty string disables native login
+  # until configured; /auth/status reports `better_auth_enabled`.
+  betterSecret: ""
+
+  # Bootstrap admin (username is always "admin"). ENV: MEMZ_ADMIN_PASSWORD.
+  # The row is created lazily on first /auth/login when the password env
+  # is set. Rotating the env rotates the admin password on next login.
+  defaultAdminPassword: ""
+
+  # OIDC integration. When oidcIssuer is non-empty the
+  # /api/v1/dimension/auth/oidc/callback endpoint is enabled.
+  oidcIssuer: ""
+  oidcClientId: ""
+  oidcClientSecret: ""
+  oidcAudience: "dimension-web"
+
+  # First-ever OIDC login auto-becomes admin (mirrors tradeus OIDC_AUTO_ADMIN).
+  oidcAutoAdmin: true
+
+  # POST /api/v1/dimension/auth/register is public when true.
+  allowPublicRegistration: false
+
+  # Access-token TTL (seconds).
+  tokenTtlSec: 3600

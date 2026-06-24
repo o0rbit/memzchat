@@ -112,7 +112,86 @@ exploitable only on the developer/CI host, never on the runtime container.
 
 Please file a **private security advisory** on GitHub
 (<https://github.com/o0rbit/memzchat/security/advisories/new>) **or** email
-`security@o0rbit.local`. Do not file public issues for security bugs.
+`security@o0rbit.local`. Do not file public issues.
+
+---
+
+## Multi-user auth (v3)
+
+The Dimension fork ships a native auth layer that runs alongside the
+legacy Matrix-bearer flow. After this fork the operator can:
+
+1. Define a bootstrap admin via `MEMZ_ADMIN_PASSWORD` (compose env).
+2. Have additional users self-register when `auth.allowPublicRegistration=true`,
+   or be created by an admin via `POST /api/v1/dimension/auth/admin/users`.
+3. Optionally delegate auth to an OIDC provider (Authentik recommended)
+   via `MEMZ_OIDC_ISSUER` / `MEMZ_OIDC_CLIENT_ID` / `MEMZ_OIDC_CLIENT_SECRET`.
+
+### Endpoints (all under `/api/v1/dimension/auth`)
+
+| Method | Path                | Auth          | Purpose                              |
+| ------ | ------------------- | ------------- | ------------------------------------ |
+| GET    | `/status`           | public        | bridge health (no secrets)           |
+| GET    | `/me`               | optional      | current user or `{authenticated:false}` |
+| POST   | `/login`            | public        | native username + password → JWT     |
+| POST   | `/register`         | public*       | self-register when allowed           |
+| POST   | `/oidc/callback`    | public        | exchange OIDC `code` → JWT           |
+| GET    | `/admin/users`      | admin only    | list users                           |
+| POST   | `/admin/users`      | admin only    | create user                          |
+| PATCH  | `/admin/users/:id`  | admin only    | role / active / password reset       |
+| DELETE | `/admin/users/:id`  | admin only    | hard delete                          |
+
+`* register is gated by `auth.allowPublicRegistration` in `config/default.yaml`.
+
+### Password hashing
+
+Node-native `scrypt` (RFC 7914) with `N=2^15, r=8, p=1, salt=16 bytes,
+key=64 bytes, maxmem=128MB`. Hash format:
+
+```
+scrypt$N=32768,r=8,p=1$<salt-b64>$<hash-b64>
+```
+
+OWASP 2024 baseline is `N=2^17` for interactive logins; we default to
+`N=2^15` because the integration-manager sees sporadic logins and the
+operator can bump `N` by editing `src/auth/passwords.ts` and re-running.
+Rehash-on-login is automatic when params change (`needsRehash()`).
+
+### JWT minting
+
+HS256 better-auth JWTs (no `jsonwebtoken` npm dependency — pure
+stdlib). Claims: `sub`, `username`, `role`, `iss=dimension`,
+`aud=dimension-web`, `iat`, `exp`, `scope`. TTL is `auth.tokenTtlSec`
+(default 3600s).
+
+The HS256 secret is read from `MEMZ_AUTH_SECRET` (compose) and falls
+back to `config.auth.betterSecret` (yaml). When both are empty, native
+login is disabled; `/auth/status` reports `better_auth_enabled:false`.
+
+### OIDC integration
+
+When `MEMZ_OIDC_ISSUER` is set, the backend:
+
+1. Discovers `/.well-known/openid-configuration` (cached 10 min).
+2. Exchanges the auth code via `client_secret_post` at `token_endpoint`.
+3. Verifies the `id_token` against the issuer's JWKS (`RS256` / `ES256`).
+4. Looks up an existing user by `(oidc_sub, oidc_provider)`. If absent,
+   auto-provisions one with `role=user` (or `role=admin` if the
+   `dimension_users` table has zero admins AND `oidcAutoAdmin=true`).
+5. Mints a better-auth HS256 JWT for the frontend (so the rest of the
+   stack only deals with one token type).
+
+Compatible with Authentik, Keycloak, Google, Microsoft, GitHub.
+
+### Roles
+
+| Role     | Capabilities                                         |
+| -------- | ---------------------------------------------------- |
+| `user`   | own user data only; non-admin endpoints              |
+| `admin`  | `/api/v1/dimension/auth/admin/*`; user management    |
+
+Role is stored in `dimension_users.role` and copied into the JWT
+`scope` claim. The middleware (`requireAdmin`) checks `req.authUser.role`.
 
 ## Express hardening (v2)
 

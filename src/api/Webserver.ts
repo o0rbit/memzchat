@@ -5,6 +5,7 @@ import { Server } from "typescript-rest";
 import * as _ from "lodash";
 import config from "../config";
 import { applySecurityMiddleware, applyErrorHandlers, SecurityConfig } from "./security/securityMiddleware";
+import { optionalAuth, requireAuth, requireAdmin } from "./security/dimensionAuth";
 import MatrixSecurity from "./security/MatrixSecurity";
 
 /**
@@ -37,6 +38,34 @@ export default class Webserver {
         applyErrorHandlers(this.app);
     }
 
+    private applyAuthGates() {
+        // Per-prefix gating: typescript-rest routes are registered as a single
+        // router. We insert auth middleware *after* the router is built so we
+        // don't have to fight typescript-rest's decorators.
+        //
+        // Public prefixes: /api/v1/dimension/auth/{status,login,register,oidc/callback}
+        //   and /api/v1/dimension/auth/me (optionalAuth — anonymous returns
+        //   {authenticated:false})
+        // Admin prefixes: /api/v1/dimension/auth/admin/*
+        const router = (this.app as any)._router;
+        if (!router || !Array.isArray(router.stack)) {
+            LogService.warn("Webserver", "auth gating skipped: router stack not found");
+            return;
+        }
+        router.stack.forEach((layer: any) => {
+            if (!layer.route) return;
+            const path: string = layer.route.path || "";
+            if (!path.startsWith("/api/v1/dimension/auth")) return;
+            if (path.startsWith("/api/v1/dimension/auth/admin")) {
+                layer.route.stack.unshift({route: undefined, handle: requireAuth()});
+                layer.route.stack.unshift({route: undefined, handle: requireAdmin()});
+            } else if (path === "/api/v1/dimension/auth/me" || path === "/api/v1/dimension/auth/me/") {
+                layer.route.stack.unshift({route: undefined, handle: optionalAuth()});
+            }
+            // /status, /login, /register, /oidc/callback remain public
+        });
+    }
+
     private loadRoutes() {
         const apis = ["scalar", "dimension", "admin", "matrix"].map(a => path.join(__dirname, a, "*"));
         const router = express.Router();
@@ -48,6 +77,7 @@ export default class Webserver {
             LogService.info("Webserver", "Registered route: " + route);
         }
         this.app.use(router);
+        this.applyAuthGates();
 
         // SPA fallback — everything else serves index.html
         this.app.get(/(widgets\/|riot\/|element\/|\/)*/, (_req, res) => {

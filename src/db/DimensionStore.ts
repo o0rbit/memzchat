@@ -3,6 +3,7 @@ import config from "../config";
 import { LogService } from "matrix-bot-sdk";
 import User from "./models/User";
 import UserScalarToken from "./models/UserScalarToken";
+import DimensionUser from "./models/DimensionUser";
 import Upstream from "./models/Upstream";
 import WidgetRecord from "./models/WidgetRecord";
 import * as path from "path";
@@ -52,6 +53,7 @@ class _DimensionStore {
             });
         }
         this.sequelize.addModels([
+            DimensionUser,
             User,
             UserScalarToken,
             Upstream,
