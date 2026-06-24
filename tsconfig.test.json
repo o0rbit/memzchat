@@ -1,0 +1,20 @@
+{
+    "extends": "./tsconfig.json",
+    "compilerOptions": {
+        "baseUrl": "./",
+        "outDir": "./build/test",
+        "module": "CommonJS",
+        "moduleResolution": "node",
+        "esModuleInterop": true,
+        "allowSyntheticDefaultImports": true,
+        "target": "es2019",
+        "lib": ["es2019", "dom"],
+        "sourceMap": true,
+        "types": ["node", "jest"]
+    },
+    "include": [
+        "./src/api/security/securityMiddleware.ts",
+        "./src/config.ts",
+        "./test/**/*.ts"
+    ]
+}

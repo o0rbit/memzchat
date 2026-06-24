@@ -224,13 +224,17 @@ After applying this fork, run:
 ```bash
 # 1. Static check — no new TypeScript errors in the modified files
 npx tsc --noEmit -p tsconfig.backend.json --types "node,body-parser,validator,express" \
-  2>&1 | grep -E "Webserver\.ts|src/index\.ts|src/config\.ts|MatrixSecurity\.ts" || echo OK
+  2>&1 | grep -E "Webserver\.ts|src/index\.ts|src/config\.ts|MatrixSecurity\.ts" || echo "TYPE CHECK OK"
 
-# 2. Header smoke test — start Dimension locally, then:
+# 2. Run unit tests (pure-function, no live services)
+npm test
+
+# 3. Header smoke test — start Dimension locally, then:
 tools/security-headers-check.sh http://localhost:8184
 
-# 3. Audit — should remain at 50 vulns (0 critical)
+# 4. Audit — should remain at 50 vulns (0 critical)
 npm audit
 ```
 
 The hardening commits are tagged `security-hardening-v2` in the commit log.
+See `TESTING.md` for test architecture details.
