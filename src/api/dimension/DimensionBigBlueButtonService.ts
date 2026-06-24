@@ -362,10 +362,8 @@ export class DimensionBigBlueButtonService {
         // We URL encode each value as a browser would. If we don't, our resulting checksum will not match.
         const widgetQueryString = this.queryStringFromObject(queryParameters, encodeAsBrowser);
 
-        LogService.info("BigBlueButton", "Built widget string:" + widgetQueryString);
-        LogService.info("BigBlueButton", "Hashing:" + apiCallName + widgetQueryString + config.bigbluebutton.sharedSecret);
-
         // Hash the api name and query parameters to get the checksum, and add it to the set of query parameters
+        // Security: never log widgetQueryString or sharedSecret — leaks sharedSecret + signed URLs.
         return sha256(apiCallName + widgetQueryString + config.bigbluebutton.sharedSecret);
     }
 
