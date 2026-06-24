@@ -110,3 +110,40 @@ bigbluebutton:
   # Usually this doen't need to be changed, however if your homeserver
   # is not able to reach t2bot.io then you should specify your own here.
   widgetAvatarUrl: "mxc://t2bot.io/be1650140620d8bb61a8cf5baeb05f24a734434c"
+
+# ============================================================================
+# Security hardening (v2)
+# ============================================================================
+# Default-on protections. Tunable per-deployment via the security: keys below.
+# See SECURITY.md § "Express hardening (v2)" for rationale of each default.
+security:
+  # Trust X-Forwarded-* headers from this many reverse-proxy hops. If you
+  # fronted Dimension with caddy/nginx/cloudflare, set this to 1. If direct,
+  # set to 0 to disable (Express will treat req.ip as the literal peer).
+  trustProxyHops: 1
+
+  # Request body size limit (body-parser). Previous default of 512mb was a
+  # DoS vector — see CVE mitigation. 1mb is plenty for all real API calls.
+  bodyLimit: "1mb"
+
+  # CORS allowlist. Empty array = no CORS headers emitted = same-origin only.
+  # If you embed Dimension widgets on another origin (rare), add it here.
+  corsOrigins: []
+
+  # Per-IP rate limit on the /api surface. 0 disables. Defaults: 100 req/min.
+  rateLimitWindowMs: 60000
+  rateLimitMax: 100
+
+  # Legacy `scalar_token` query-param auth (Matrix Scalar <1.0).
+  # Default: REJECTED. Enable ONLY during migration from legacy Scalar.
+  allowLegacyScalarToken: false
+
+  # Content-Security-Policy: default-src 'self'. Extend via the arrays below
+  # to allow specific origins (widgets, CDNs). Set cspEnabled: false ONLY for
+  # debugging — never in production.
+  cspEnabled: true
+  cspExtraConnectSrc: []
+  cspExtraFrameSrc: []
+  cspExtraScriptSrc: []
+  cspExtraStyleSrc: []
+  cspExtraImgSrc: []

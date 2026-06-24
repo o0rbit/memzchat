@@ -12,12 +12,21 @@ declare global {
             userId: string;
             token: string;
         }
+        interface Request {
+            // 32-hex-char request id, set by Webserver.configure(). Used in
+            // logs and returned as X-Request-Id header for client-side reporting.
+            id: string;
+        }
     }
 }
 
-LogService.setLevel(LogLevel.DEBUG);
+// Log level: DEBUG in dev, INFO in prod. Never run production with DEBUG.
+// SECURITY.md § "Express hardening (v2)" — debug logging can leak tokens
+// and internal state into log aggregators.
+const logLevel = process.env.NODE_ENV === "production" ? LogLevel.INFO : LogLevel.DEBUG;
+LogService.setLevel(logLevel);
 LogService.setLogger(new RichConsoleLogger());
-LogService.info("index", "Starting dimension " + CURRENT_VERSION);
+LogService.info("index", "Starting dimension " + CURRENT_VERSION + " (env=" + (process.env.NODE_ENV || "unset") + ")");
 
 async function startup() {
     const schemas = await DimensionStore.updateSchema();
@@ -40,9 +49,25 @@ async function startup() {
     await MatrixStickerBot.start();
 }
 
+// Global safety nets — log unhandled rejections/exceptions but don't dump
+// them to the client. SECURITY.md § "Express hardening (v2)".
+process.on("unhandledRejection", (reason) => {
+    LogService.error("index", "Unhandled promise rejection: " + (reason instanceof Error ? reason.stack : String(reason)));
+});
+process.on("uncaughtException", (err) => {
+    LogService.error("index", "Uncaught exception: " + (err && err.stack ? err.stack : String(err)));
+    // Exit non-zero so the supervisor (s6/systemd/docker) restarts us.
+    // Continuing after uncaughtException is dangerous — DB connections may
+    // be in unknown state.
+    process.exit(1);
+});
+
 startup()
     .then(() => LogService.info("index", "Dimension is ready!"))
     .catch((e) => {
-        console.error(e);
-        process.exit(1)
+        // Don't echo raw error to console — could contain access tokens,
+        // DB URIs, etc. Log via LogService (which can be wired to a sink
+        // that scrubs PII) and exit.
+        LogService.error("index", "Startup failed: " + (e instanceof Error ? e.stack : String(e)));
+        process.exit(1);
     });

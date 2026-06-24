@@ -113,3 +113,124 @@ exploitable only on the developer/CI host, never on the runtime container.
 Please file a **private security advisory** on GitHub
 (<https://github.com/o0rbit/memzchat/security/advisories/new>) **or** email
 `security@o0rbit.local`. Do not file public issues for security bugs.
+
+## Express hardening (v2)
+
+Beyond dependency upgrades, this fork applies the following Express / Node
+source-level hardening. All are gated by `security:` keys in `config/default.yaml`
+so operators can tune without forking.
+
+### 1. Security headers via `helmet`
+
+`Webserver.configure()` mounts `helmet()` as the first middleware. Defaults:
+
+| Header                                | Value                                                  |
+| ------------------------------------- | ------------------------------------------------------ |
+| `Content-Security-Policy`             | `default-src 'self'`; no `unsafe-inline` / `unsafe-eval` (extend via `security.cspExtra*`) |
+| `Strict-Transport-Security`           | `max-age=31536000; includeSubDomains`                   |
+| `X-Frame-Options`                     | `SAMEORIGIN` (Dimension is not embeddable from other origins) |
+| `X-Content-Type-Options`              | `nosniff`                                               |
+| `Referrer-Policy`                     | `strict-origin-when-cross-origin`                      |
+| `Cross-Origin-Resource-Policy`        | `same-site`                                             |
+| `X-DNS-Prefetch-Control`, etc.        | helmet defaults                                         |
+
+`X-Powered-By` is explicitly disabled (helmet does this too, but it's also
+called out via `app.disable("x-powered-by")` for defence in depth).
+
+### 2. Body-parser limit: 512 MB → 1 MB
+
+The previous default of `512mb` allowed a single unauthenticated request to
+consume up to half a gigabyte of memory. Default in this fork is `1mb`,
+configurable via `security.bodyLimit`.
+
+### 3. CORS allowlist (was `*`)
+
+The previous code emitted `Access-Control-Allow-Origin: *` for every
+response — fine for a public API but risky for an authenticated integrations
+manager. The new behaviour emits **no** CORS headers at all when
+`security.corsOrigins` is empty (the default), which means browsers block
+cross-origin XHR. Add explicit origins to allowlist cross-origin embeds.
+
+`Access-Control-Allow-Credentials` is always `false` — Dimension uses Bearer
+headers, not cookies, so credentials don't need to flow.
+
+### 4. Rate limiting
+
+`express-rate-limit` on `/api` and `/_matrix` (default 100 req/min per IP).
+Configurable via `security.rateLimitMax` and `security.rateLimitWindowMs`.
+Set `rateLimitMax: 0` to disable (not recommended).
+
+### 5. Sanitized error responses
+
+Unhandled errors no longer leak stack traces or internal messages to the
+client. The response is a generic `{errcode: "M_UNKNOWN", error: "..."}` plus
+a `req.id` reference; the full error is logged server-side with the same id
+for correlation. `req.id` is also returned as `X-Request-Id` so users can
+quote it in bug reports.
+
+### 6. Graceful shutdown
+
+`SIGTERM` / `SIGINT` triggers `server.close()` with a 10-second drain timeout
+instead of an abrupt `process.exit(1)`. Socket-level `headersTimeout` and
+`keepAliveTimeout` are also set so a single slow client can't tie up a worker
+indefinitely.
+
+### 7. Log level from `NODE_ENV`
+
+The previous code hard-coded `LogService.setLevel(LogLevel.DEBUG)`. This fork
+sets `DEBUG` only when `NODE_ENV !== "production"`. DEBUG logs can include
+full URLs, raw error objects, and intermediate state — those should never
+reach production log aggregators.
+
+### 8. Global safety nets
+
+`process.on("unhandledRejection")` and `process.on("uncaughtException")` log
+the error via `LogService` (so PII can be scrubbed by the logger) and exit
+non-zero on uncaught exceptions so the supervisor (s6 / systemd / docker)
+restarts the process. Continuing after `uncaughtException` is dangerous — DB
+connections and other resources may be in unknown state.
+
+### 9. Legacy `scalar_token` auth gated off
+
+The Matrix Scalar legacy `?scalar_token=...` query-param auth is now
+**rejected by default** (`security.allowLegacyScalarToken: false`). Tokens
+in URLs get logged to access logs and persisted in browser histories. If you
+are mid-migration from legacy Scalar, set `security.allowLegacyScalarToken:
+true` temporarily, then remove.
+
+### 10. Trust proxy
+
+`security.trustProxyHops` controls how many `X-Forwarded-*` hops Express
+trusts. Default `1` — correct for a single caddy/nginx in front. Set to `0`
+if Dimension is exposed directly to the internet.
+
+## What was NOT changed (and why)
+
+- **MD5 in `src/utils/hashing.ts`** — used only for non-security
+  content-addressable ID generation in `TermsController` (`upstream_${md5(...)}`).
+  Not used for password hashing, signatures, or anything security-sensitive.
+  Switching to SHA-256 is a one-line PR if desired; left as-is to minimize
+  diff size.
+- **No test framework installed** — adding jest/mocha on top of an Angular 12
+  / webpack 5 codebase risks a much larger dependency footprint. The
+  `tools/security-headers-check.sh` script covers the smoke-testable subset
+  of the hardening changes. Manual integration test plan is in the commit
+  message of the corresponding hardening commit.
+
+## Verification
+
+After applying this fork, run:
+
+```bash
+# 1. Static check — no new TypeScript errors in the modified files
+npx tsc --noEmit -p tsconfig.backend.json --types "node,body-parser,validator,express" \
+  2>&1 | grep -E "Webserver\.ts|src/index\.ts|src/config\.ts|MatrixSecurity\.ts" || echo OK
+
+# 2. Header smoke test — start Dimension locally, then:
+tools/security-headers-check.sh http://localhost:8184
+
+# 3. Audit — should remain at 50 vulns (0 critical)
+npm audit
+```
+
+The hardening commits are tagged `security-hardening-v2` in the commit log.

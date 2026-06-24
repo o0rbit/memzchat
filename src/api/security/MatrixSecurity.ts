@@ -63,6 +63,14 @@ export default class MatrixSecurity implements ServiceAuthenticator {
                 } else if (req.query && req.query.access_token) {
                     token = req.query.access_token;
                 } else if (req.query && req.query.scalar_token) {
+                    // SECURITY.md § "Express hardening (v2)" — legacy `scalar_token`
+                    // query-param auth is gated by config. Tokens in URLs get logged
+                    // to access logs and browser histories. Default in this fork:
+                    // REJECT unless the operator has explicitly opted in.
+                    if (!config.security?.allowLegacyScalarToken) {
+                        LogService.warn("MatrixSecurity", "Rejected request using legacy scalar_token auth (security.allowLegacyScalarToken=false)");
+                        return res.status(401).json({errcode: "M_INVALID_TOKEN", error: "Legacy auth method disabled"});
+                    }
                     LogService.warn("MatrixSecurity", "Request used old scalar_token auth - this will be removed in a future version");
                     token = req.query.scalar_token;
                 }
