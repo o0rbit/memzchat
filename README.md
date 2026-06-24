@@ -1,10 +1,20 @@
 ![dimension](https://t2bot.io/_matrix/media/r0/download/t2l.io/b3101d429588673087f457a4bdd52f45)
 
 
-[![TravisCI badge](https://travis-ci.org/turt2live/matrix-dimension.svg?branch=master)](https://travis-ci.org/turt2live/matrix-dimension)
+An open source integration manager for Matrix clients, like Element.
 
-An open source integration manager for matrix clients, like Element. For help and support, please visit
-us in [#dimension:t2bot.io](https://matrix.to/#/#dimension:t2bot.io) on Matrix.
+> **Fork notice (o0rbit/memzchat):** This is a maintained fork of the archived
+> [turt2live/matrix-dimension](https://github.com/turt2live/matrix-dimension). Upstream
+> is no longer maintained and is archived. We cherry-pick security fixes and ship
+> an o0rb.code-compatible build with OIDC/caddy auth + mTLS in front.
+
+## Security fixes applied on top of upstream `425854f`
+
+| CVE / Issue | Status |
+|---|---|
+| BigBlueButton `sharedSecret` leak in logs | **Fixed** (port of [upstream PR #505](https://github.com/turt2live/matrix-dimension/pull/505)) |
+| postcss build-dep CVE (`SNYK-JS-POSTCSS-5926692`) | **Fixed** (from bloomsirenix fork) |
+| Angular build-dep upgrade 12 → 15 | **Fixed** (from bloomsirenix fork) |
 
 # Installing Dimension / Running your own
 
