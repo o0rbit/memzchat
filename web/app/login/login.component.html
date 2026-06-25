@@ -1,0 +1,66 @@
+<div class="login-container">
+    <div class="login-card">
+        <div class="brand">
+            <img src="/assets/img/logo/banner-sm.png" class="logo" alt="Dimension">
+            <h2>{{'Integration Manager' | translate}}</h2>
+        </div>
+
+        <div *ngIf="status && status.bootstrap_admin_configured && !status.has_admin" class="alert alert-info">
+            <strong>Welcome!</strong> Bootstrap admin is configured. Use the form below to log in for the first time.
+        </div>
+
+        <div *ngIf="error" class="alert alert-danger">{{ error | translate}}</div>
+
+        <form (ngSubmit)="submit()" *ngIf="status">
+            <div class="form-group">
+                <label for="username">{{'Username' | translate}}</label>
+                <input id="username" class="form-control" type="text" name="username"
+                       [(ngModel)]="username" required autocomplete="username">
+            </div>
+
+            <div class="form-group" *ngIf="mode === 'register'">
+                <label for="email">{{'Email (optional)' | translate}}</label>
+                <input id="email" class="form-control" type="email" name="email"
+                       [(ngModel)]="email" autocomplete="email">
+            </div>
+
+            <div class="form-group">
+                <label for="password">{{'Password' | translate}}</label>
+                <input id="password" class="form-control" type="password" name="password"
+                       [(ngModel)]="password" required autocomplete="{{ mode === 'login' ? 'current-password' : 'new-password' }}">
+            </div>
+
+            <button *ngIf="mode === 'login'" class="btn btn-block btn-primary" [disabled]="loading">
+                <span *ngIf="!loading">{{'Login' | translate}}</span>
+                <span *ngIf="loading">...</span>
+            </button>
+            <button *ngIf="mode === 'register' && status.allow_public_registration"
+                    type="submit" class="btn btn-block btn-secondary" [disabled]="loading">
+                <span *ngIf="!loading">{{'Create account' | translate}}</span>
+                <span *ngIf="loading">...</span>
+            </button>
+
+            <div class="text-center mt-2">
+                <a href="javascript:void(0)" (click)="toggleMode()">
+                    {{ mode === 'login' ? ('Need an account? Register' | translate) : ('Already have an account? Login' | translate) }}
+                </a>
+            </div>
+
+            <div *ngIf="status.oidc_enabled" class=" OIDc-section">
+                <hr>
+                <button type="button" class="btn btn-block btn-oidc" (click)="startOidc()" [disabled]="loading">
+                    <img *ngIf="false" src="/assets/img/slack_auth_button.png" class="oidc-icon">
+                    {{'Login with' | translate}} {{ status.oidc_issuer }}
+                </button>
+            </div>
+
+            <p *ngIf="status.allow_public_registration && mode === 'login'" class="muted small">
+                Self-registration is enabled.
+            </p>
+        </form>
+
+        <div *ngIf="!status" class="muted small">
+            Connecting to Dimension...
+        </div>
+    </div>
+</div>

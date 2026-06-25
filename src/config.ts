@@ -19,6 +19,7 @@ export interface DimensionConfig {
         uri: string;
     };
     admins: string[];
+    trustProxyHops: number;
     goneb: {
         avatars: {
             [botType: string]: string; // mxc

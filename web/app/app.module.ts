@@ -56,6 +56,9 @@ import { AdminNebGiphyConfigComponent } from "./admin/neb/config/giphy/giphy.com
 import { AdminNebGuggyConfigComponent } from "./admin/neb/config/guggy/guggy.component";
 import { AdminNebGoogleConfigComponent } from "./admin/neb/config/google/google.component";
 import { AdminNebImgurConfigComponent } from "./admin/neb/config/imgur/imgur.component";
+import { LoginComponent } from "./login/login.component";
+import { OidcRedirectComponent } from "./login/oidc-redirect.component";
+import { DimensionAuthService } from "./shared/services/dimension-auth.service";
 import {
     ConfigScreenComplexBotComponent
 } from "./configs/complex-bot/config-screen/config-screen.complex-bot.component";

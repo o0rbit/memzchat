@@ -58,9 +58,13 @@ import { AdminHookshotWebhookBridgeComponent } from "./admin/bridges/hookshot-we
 import {
     HookshotWebhookBridgeConfigComponent
 } from "./configs/bridge/hookshot-webhook/hookshot-webhook.bridge.component";
+import { LoginComponent } from "./login/login.component";
+import { OidcRedirectComponent } from "./login/oidc-redirect.component";
 
 const routes: Routes = [
     {path: "", component: HomeComponent},
+    {path: "login", component: LoginComponent},
+    {path: "auth/oidc/redirect", component: OidcRedirectComponent},
     {path: "riot", pathMatch: "full", redirectTo: "riot-app", data: {breadcrumb: "Home", name: "Integration manager"}},
     {path: "element", pathMatch: "full", redirectTo: "riot-app", data: {breadcrumb: "Home", name: "Integration manager"}},
     {

@@ -1,0 +1,46 @@
+version: "3.8"
+
+services:
+  dimension:
+    build: .
+    restart: unless-stopped
+    ports:
+      - "8184:8184"
+    volumes:
+      - dimension-data:/data
+    environment:
+      # --- Core ---
+      - NODE_ENV=production
+      - DIMENSION_DB_PATH=/data/dimension.db
+
+      # --- Auth (native better-auth) ---
+      # HS256 secret for JWT signing. MUST be >= 32 chars in production.
+      # Generate: openssl rand -base64 48
+      - MEMZ_AUTH_SECRET=change-me-to-a-32-char-minimum-secret
+
+      # Bootstrap admin password. When set, user "admin" can log in via
+      # POST /api/v1/dimension/auth/login with this password. The admin
+      # row is created lazily on first login. Rotating this env rotates
+      # the admin password (hash is computed on first login).
+      - MEMZ_ADMIN_PASSWORD=change-me-on-first-deploy
+
+      # --- OIDC (optional) ---
+      # When MEMZ_OIDC_ISSUER is set, the /auth/oidc/callback endpoint
+      # is enabled. All other OIDC_* values are required when issuer is set.
+      - MEMZ_OIDC_ISSUER=
+      - MEMZ_OIDC_CLIENT_ID=dimension-web
+      - MEMZ_OIDC_CLIENT_SECRET=
+      - MEMZ_OIDC_AUDIENCE=dimension-web
+
+      # --- Security hardening (v2) ---
+      # trustProxyHops: number of reverse-proxy hops to trust for
+      # X-Forwarded-For / X-Forwarded-Proto. Set to 0 if not behind a proxy.
+      - DIMENSION_TRUST_PROXY_HOPS=1
+
+      # --- Admin users (optional static config) ---
+      # Comma-separated list of Matrix user IDs that are always admins
+      # in addition to dimension_users.role=admin. Kept for backward compat.
+      - DIMENSION_ADMINS=
+
+volumes:
+  dimension-data:

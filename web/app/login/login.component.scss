@@ -1,0 +1,53 @@
+.login-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    background: #1a1a2e;
+    padding: 1rem;
+}
+
+.login-card {
+    background: #16213e;
+    border-radius: 8px;
+    padding: 2rem;
+    width: 100%;
+    max-width: 400px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+
+    .brand {
+        text-align: center;
+        margin-bottom: 1.5rem;
+        img { height: 48px; }
+        h2 { color: #e0e0e0; margin-top: 0.5rem; font-size: 1.2rem; }
+    }
+
+    .form-group {
+        margin-bottom: 1rem;
+        label { display: block; color: #aaa; margin-bottom: 0.25rem; font-size: 0.85rem; }
+        input {
+            width: 100%;
+            padding: 0.6rem;
+            border: 1px solid #333;
+            border-radius: 4px;
+            background: #0f3460;
+            color: #e0e0e0;
+            &:focus { outline: none; border-color: #533483; }
+        }
+    }
+
+    .btn-primary { background: #533483; color: white; border: none; padding: 0.7rem; border-radius: 4px; cursor: pointer; }
+    .btn-secondary { background: #0f3460; color: white; border: 1px solid #533483; padding: 0.7rem; border-radius: 4px; cursor: pointer; }
+    .btn-oidc { background: #fff; color: #333; border: 1px solid #ccc; padding: 0.7rem; border-radius: 4px; cursor: pointer; }
+
+    .oidc-section { margin-top: 1rem; }
+
+    .alert { padding: 0.75rem; border-radius: 4px; margin-bottom: 1rem; font-size: 0.85rem; }
+    .alert-danger { background: #532; color: #fdd; }
+    .alert-info { background: #234; color: #cde; }
+
+    .muted { color: #888; }
+    .small { font-size: 0.8rem; }
+    .text-center { text-align: center; }
+    .mt-2 { margin-top: 1rem; }
+}

@@ -31,8 +31,9 @@ homeserver:
 
 # These users can modify the integrations this Dimension supports.
 # To access the admin interface, open Dimension in Element and click the settings icon.
-admins:
-  - "@someone:domain.com"
+admins: []
+trustProxyHops: 1
+#goBLABLA
 
 # IPs and CIDR ranges listed here will be blocked from being widgets.
 # Note: Widgets may still be embedded with restricted content, although not through Dimension directly.

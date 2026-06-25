@@ -31,7 +31,7 @@ export default class Webserver {
         this.app = express();
 
         this.app.disable("x-powered-by");
-        this.app.set("trust proxy", config.security?.trustProxyHops ?? 1);
+        this.app.set("trust proxy", config.trustProxyHops ?? 1);
 
         applySecurityMiddleware(this.app, config.security as SecurityConfig);
         this.loadRoutes();

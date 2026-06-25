@@ -1,0 +1,43 @@
+# Caddyfile for memzchat with OIDC reverse proxy
+#
+# Replace `dimension.example.com` with your actual domain.
+# Replace `authentik.example.com` with your Authentik instance.
+#
+# The OIDC callback flow:
+#   1. User clicks "Login with Authentik" → browser goes to
+#      https://authentik.example.com/application/o/memzchat/authorize?...
+#   2. Authentik authenticates, redirects to
+#      https://dimension.example.com/auth/oidc/redirect?code=...
+#   3. OidcRedirectComponent forwards the code to
+#      POST /api/v1/dimension/auth/oidc/callback
+#   4. Backend exchanges the code for an id_token, mints a JWT,
+#      and the frontend stores it in localStorage.
+
+dimension.example.com {
+    # --- Security headers (reinforcing what helmet does) ---
+    header {
+        X-Content-Type-Options "nosniff"
+        X-Frame-Options "SAMEORIGIN"
+        Referrer-Policy "strict-origin-when-cross-origin"
+        Strict-Transport-Security "max-age=31536000; includeSubDomains"
+        -Server
+    }
+
+    # --- OIDC redirect (public, no auth required) ---
+    handle /auth/oidc/redirect {
+        reverse_proxy dimension:8184
+    }
+
+    # --- Auth endpoints (public, rate-limited) ---
+    handle /api/v1/dimension/auth/* {
+        reverse_proxy dimension:8184
+    }
+
+    # --- Everything else ---
+    reverse_proxy dimension:8184
+}
+
+# Optional: Authentik itself (if you host it on the same Caddy)
+# authentik.example.com {
+#     reverse_proxy authentik:9000
+# }

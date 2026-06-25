@@ -1,9 +1,10 @@
 import { Observable } from "rxjs/Observable";
 import { SessionStorage } from "../SessionStorage";
 import { HttpClient } from "@angular/common/http";
+import { DimensionAuthService } from "./dimension-auth.service";
 
 export class AuthedApi {
-    constructor(protected http: HttpClient, private matrixAuth = false) {
+    constructor(protected http: HttpClient, private matrixAuth = false, protected authService?: DimensionAuthService) {
     }
 
     protected authedGet<T>(url: string, qs?: any): Observable<T> {
@@ -34,6 +35,8 @@ export class AuthedApi {
         if (!headers) headers = {};
         if (this.matrixAuth) {
             headers["Authorization"] = `Bearer ${SessionStorage.scalarToken}`;
+        } else if (this.authService && this.authService.getToken()) {
+            headers["Authorization"] = `Bearer ${this.authService.getToken()}`;
         } else {
             qs["scalar_token"] = SessionStorage.scalarToken;
         }
