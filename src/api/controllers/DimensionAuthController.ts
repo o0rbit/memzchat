@@ -142,6 +142,12 @@ async function ensureBootstrapAdmin(): Promise<DimensionUser | null> {
         LogService.info("Auth", `bootstrap admin row created (userId=${userId})`);
     } else if ((row as any).role !== "admin") {
         await row.update({role: "admin" as DimensionUserRole});
+    } else if ((row as any).passwordHash) {
+        // Re-hash if the env password changed since last login.
+        if (!(await verifyPassword(adminPw, (row as any).passwordHash))) {
+            await row.update({passwordHash: await hashPassword(adminPw)});
+            LogService.info("Auth", `bootstrap admin password re-hashed (userId=${userId})`);
+        }
     }
     return row;
 }
