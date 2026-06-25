@@ -119,6 +119,9 @@ import { ReauthExampleWidgetWrapperComponent } from "./widget-wrappers/reauth-ex
 import { ManagerTestWidgetWrapperComponent } from "./widget-wrappers/manager-test/manager-test.component";
 import { AdminTermsApiService } from "./shared/services/admin/admin-terms-api.service";
 import { AdminTermsComponent } from "./admin/terms/terms.component";
+import { AdminUsersComponent } from "./admin/users/users.component";
+import { AdminUsersApiService } from "./shared/services/admin/admin-users-api.service";
+import { DimensionAuthGuard } from "./shared/guards/dimension-auth.guard";
 import { CKEditorModule } from "@ckeditor/ckeditor5-angular";
 import { AdminNewEditTermsComponent } from "./admin/terms/new-edit/new-edit.component";
 import { AdminTermsNewEditPublishDialogComponent } from "./admin/terms/new-edit/publish/publish.component";

@@ -31,6 +31,10 @@ services:
       - MEMZ_OIDC_CLIENT_ID=dimension-web
       - MEMZ_OIDC_CLIENT_SECRET=
       - MEMZ_OIDC_AUDIENCE=dimension-web
+      # OIDC admin whitelist: comma-separated list of email / subject /
+      # preferred_username values that should always get role=admin on
+      # first OIDC login. Optional.
+      - MEMZ_OIDC_ADMINS=
 
       # --- Security hardening (v2) ---
       # trustProxyHops: number of reverse-proxy hops to trust for

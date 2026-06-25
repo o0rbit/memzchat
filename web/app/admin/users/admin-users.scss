@@ -1,0 +1,43 @@
+.admin-users {
+    .header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1rem;
+        h3 { margin: 0; }
+        .actions { display: flex; gap: 0.5rem; }
+    }
+    .create-card {
+        background: #16213e;
+        padding: 1rem;
+        border-radius: 6px;
+        margin-bottom: 1rem;
+        h4 { margin-bottom: 0.75rem; }
+        .form-row { display: flex; flex-wrap: wrap; gap: 1rem; margin-bottom: 0.75rem; }
+        .form-group { flex: 1; min-width: 150px; }
+        label { display: block; font-size: 0.8rem; color: #aaa; margin-bottom: 0.2rem; }
+        input, select { width: 100%; padding: 0.4rem; border-radius: 3px; border: 1px solid #333; background: #0f3460; color: #e0e0e0; }
+    }
+    .table {
+        width: 100%;
+        border-collapse: collapse;
+        th, td { padding: 0.5rem; text-align: left; border-bottom: 1px solid #333; }
+        th { color: #aaa; font-size: 0.8rem; }
+        .role-select { display: inline; width: auto; padding: 0.2rem; }
+        .actions { display: flex; gap: 0.3rem; white-space: nowrap; }
+        .badge { padding: 0.2rem 0.5rem; border-radius: 3px; font-size: 0.7rem; }
+        .badge-success { background: #2a5; color: #fff; }
+        .badge-danger { background: #a33; color: #fff; }
+    }
+    .muted { color: #888; }
+    .btn { padding: 0.4rem 0.8rem; border: none; border-radius: 3px; cursor: pointer; }
+    .btn-primary { background: #533483; color: #fff; }
+    .btn-secondary { background: #0f3460; color: #fff; }
+    .btn-success { background: #2a5; color: #fff; }
+    .btn-danger { background: #a33; color: #fff; }
+    .btn-warning { background: #a82; color: #fff; }
+    .btn-info { background: #25a; color: #fff; }
+    .btn-sm { padding: 0.25rem 0.5rem; font-size: 0.75rem; }
+    .alert { padding: 0.6rem; border-radius: 4px; margin-bottom: 0.75rem; font-size: 0.85rem; }
+    .alert-danger { background: #532; color: #fdd; }
+}

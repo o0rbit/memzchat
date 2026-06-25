@@ -74,6 +74,23 @@ function getTtl(): number {
     return (config.auth && config.auth.tokenTtlSec) || 3600;
 }
 
+function oidcAdminWhitelist(): Set<string> {
+    const raw = process.env.MEMZ_OIDC_ADMINS || "";
+    return new Set(raw.split(",").map((s) => s.trim().toLowerCase()).filter(Boolean));
+}
+
+function shouldOidcBeAdmin(claims: Record<string, any>, adminCount: number): boolean {
+    // 1. Config-level auto-admin: first user becomes admin
+    if (config.auth && config.auth.oidcAutoAdmin && adminCount === 0) return true;
+    // 2. Explicit whitelist via env
+    const whitelist = oidcAdminWhitelist();
+    if (whitelist.size === 0) return false;
+    const sub = String(claims.sub || "").toLowerCase();
+    const email = String(claims.email || "").toLowerCase();
+    const preferred = String(claims.preferred_username || "").toLowerCase();
+    return whitelist.has(sub) || whitelist.has(email) || whitelist.has(preferred);
+}
+
 function deriveUsernameFromOidc(claims: Record<string, any>): string {
     const pref = claims.preferred_username;
     if (typeof pref === "string" && pref.trim()) return pref.trim().slice(0, 128);
@@ -295,9 +312,8 @@ export class DimensionAuthController {
         let user = await DimensionUser.findOne({where: {oidcSub: idClaims.sub, oidcProvider: issuer}});
         const username = deriveUsernameFromOidc(idClaims);
         if (!user) {
-            const autoAdmin = !!(config.auth && config.auth.oidcAutoAdmin);
-            const adminCount = autoAdmin ? await DimensionUser.count({where: {role: "admin"}}) : 1;
-            const role: DimensionUserRole = (autoAdmin && adminCount === 0) ? "admin" : "user";
+            const adminCount = await DimensionUser.count({where: {role: "admin"}});
+            const role: DimensionUserRole = shouldOidcBeAdmin(idClaims, adminCount) ? "admin" : "user";
             user = await DimensionUser.create({
                 userId: "@oidc-" + idClaims.sub.slice(0, 32) + ":self",
                 isSelfBot: false,

@@ -48,6 +48,7 @@ import { ReauthExampleWidgetWrapperComponent } from "./widget-wrappers/reauth-ex
 import { ManagerTestWidgetWrapperComponent } from "./widget-wrappers/manager-test/manager-test.component";
 import { AdminTermsComponent } from "./admin/terms/terms.component";
 import { AdminNewEditTermsComponent } from "./admin/terms/new-edit/new-edit.component";
+import { AdminUsersComponent } from "./admin/users/users.component";
 import { TermsWidgetWrapperComponent } from "./widget-wrappers/terms/terms.component";
 import { WhiteboardWidgetComponent } from "./configs/widget/whiteboard/whiteboard.widget.component";
 import { AdminHookshotGithubBridgeComponent } from "./admin/bridges/hookshot-github/hookshot-github.component";
@@ -59,6 +60,7 @@ import {
     HookshotWebhookBridgeConfigComponent
 } from "./configs/bridge/hookshot-webhook/hookshot-webhook.bridge.component";
 import { LoginComponent } from "./login/login.component";
+import { DimensionAuthGuard } from "./shared/guards/dimension-auth.guard";
 import { OidcRedirectComponent } from "./login/oidc-redirect.component";
 
 const routes: Routes = [
@@ -70,6 +72,7 @@ const routes: Routes = [
     {
         path: "riot-app",
         component: ElementComponent,
+        canActivate: [DimensionAuthGuard],
         data: {breadcrumb: "Home", name: "Integration manager"},
         children: [
             {
@@ -84,6 +87,11 @@ const routes: Routes = [
                     {
                         path: "",
                         component: AdminHomeComponent,
+                    },
+                    {
+                        path: "users",
+                        component: AdminUsersComponent,
+                        data: {breadcrumb: "Users", name: "Users"},
                     },
                     {
                         path: "widgets",
