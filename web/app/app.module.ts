@@ -277,7 +277,10 @@ export function HttpLoaderFactory(http: HttpClient) {
         HookshotWebhookBridgeConfigComponent,
         FieldComponent,
 
-        // Vendor
+        // Auth UI
+        LoginComponent,
+        OidcRedirectComponent,
+        AdminUsersComponent,
     ],
     providers: [
         AdminApiService,

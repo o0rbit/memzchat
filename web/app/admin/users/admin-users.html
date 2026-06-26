@@ -61,7 +61,7 @@
                 <td>{{ u.username }}</td>
                 <td class="muted">{{ u.userId }}</td>
                 <td>
-                    <select class="form-control role-select" [ngValue]="u.role" (change)="changeRole(u, $event.target.value)">
+                    <select class="form-control role-select" (change)="changeRole(u, $event.target.value)">
                         <option value="user">user</option>
                         <option value="admin">admin</option>
                     </select>

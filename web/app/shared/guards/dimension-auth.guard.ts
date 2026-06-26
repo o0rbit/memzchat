@@ -1,6 +1,6 @@
 import { Injectable } from "@angular/core";
 import { CanActivate, ActivatedRouteSnapshot, RouterStateSnapshot, Router } from "@angular/router";
-import { DimensionAuthService } from "../shared/services/dimension-auth.service";
+import { DimensionAuthService } from "../services/dimension-auth.service";
 
 /**
  * Route guard that requires a valid Dimension auth session.

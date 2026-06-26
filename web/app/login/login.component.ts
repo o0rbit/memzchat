@@ -35,7 +35,7 @@ export class LoginComponent implements OnInit {
                 this.status = s;
                 this.oidcLoginUrl = this.buildOidcUrl(s);
             },
-            catch: () => {
+            error: () => {
                 this.status = {
                     better_auth_enabled: false,
                     oidc_enabled: false,
@@ -61,11 +61,11 @@ export class LoginComponent implements OnInit {
             this.error = (err && err.error && err.error.error) || "login failed";
         };
         if (this.mode === "login") {
-            this.auth.login(this.username, this.password).subscribe({next, catch: fail});
+            this.auth.login(this.username, this.password).subscribe({next, error: fail});
         } else {
             this.auth.register(this.username, this.password, this.email || undefined).subscribe({
-                next: () => this.auth.login(this.username, this.password).subscribe({next, catch: fail}),
-                catch: fail,
+                next: () => this.auth.login(this.username, this.password).subscribe({next, error: fail}),
+                error: fail,
             });
         }
     }

@@ -37,14 +37,14 @@ export class AdminUsersApiService {
     }
 
     public createUser(req: CreateUserRequest): Promise<{userId: string; username: string; role: string; created: boolean}> {
-        return this.http.post(`${this.apiBase}/users`, req, {headers: this.auth.getAuthHeaders()}).toPromise();
+        return this.http.post<{userId: string; username: string; role: string; created: boolean}>(`${this.apiBase}/users`, req, {headers: this.auth.getAuthHeaders()}).toPromise();
     }
 
     public updateUser(userId: string, req: UpdateUserRequest): Promise<{updated: boolean}> {
-        return this.http.patch(`${this.apiBase}/users/${encodeURIComponent(userId)}`, req, {headers: this.auth.getAuthHeaders()}).toPromise();
+        return this.http.patch<{updated: boolean}>(`${this.apiBase}/users/${encodeURIComponent(userId)}`, req, {headers: this.auth.getAuthHeaders()}).toPromise();
     }
 
     public deleteUser(userId: string): Promise<{deleted: boolean}> {
-        return this.http.delete(`${this.apiBase}/users/${encodeURIComponent(userId)}`, {headers: this.auth.getAuthHeaders()}).toPromise();
+        return this.http.delete<{deleted: boolean}>(`${this.apiBase}/users/${encodeURIComponent(userId)}`, {headers: this.auth.getAuthHeaders()}).toPromise();
     }
 }

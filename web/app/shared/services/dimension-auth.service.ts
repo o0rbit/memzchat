@@ -2,7 +2,7 @@ import { Injectable } from "@angular/core";
 import { HttpClient } from "@angular/common/http";
 import { BehaviorSubject, Observable, of } from "rxjs";
 import { tap, catchError, map } from "rxjs/operators";
-import { SessionStorage } from "./SessionStorage";
+// removed
 
 export interface DimensionAuthUser {
     userId: string;
@@ -56,7 +56,7 @@ export class DimensionAuthService {
     public getCurrentUser(): Observable<{authenticated: boolean; user?: DimensionAuthUser; source?: string}> {
         const token = localStorage.getItem("dimension_auth_token");
         if (!token) return of({authenticated: false});
-        return this.http.get(`${this.apiBase}/me`, {headers: this.authHeaders()}).pipe(
+        return this.http.get(`${this.apiBase}/me`, {headers: this.getAuthHeaders()}).pipe(
             map((res: any) => ({authenticated: true, user: res.user, source: res.source})),
             catchError(() => {
                 this.clearSession();
